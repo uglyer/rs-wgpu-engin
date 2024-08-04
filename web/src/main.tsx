@@ -10,16 +10,29 @@ import * as importObject from "../pkg/index_bg";
 
 console.log("wasmUri", wasmUri);
 console.log("importObject", importObject);
+
 function loadWasm() {
-    return WebAssembly.instantiateStreaming(fetch(wasmUri as any), importObject);
+    const config = {
+        "./index_bg.js": importObject,
+    }
+    if (typeof WebAssembly.compileStreaming == "function") {
+        return WebAssembly.instantiateStreaming(fetch(wasmUri as any), config);
+    }
+    return fetch(wasmUri)
+        .then(response =>
+            response.arrayBuffer()
+        ).then(bytes =>
+            WebAssembly.instantiate(bytes, config)
+        )
 }
 
 async function main() {
-    const wasm = await loadWasm();
-    console.log(wasm);
-    // __wbg_set_wasm(wasm);
-    //
-    // wasm.__wbindgen_start();
+    const m = await loadWasm();
+    const wasm = m.instance.exports;
+    importObject.__wbg_set_wasm(wasm);
+    // @ts-ignore
+    wasm.__wbindgen_start();
+    console.log(m);
 }
 
 main();
