@@ -1,0 +1,10 @@
+declare module '*.md';
+declare module '*.jpg';
+declare module '*.png';
+declare module '*.svg';
+declare module '*.scss';
+declare module '*.wasm';
+declare module '*.hdr';
+declare module '*.mp4';
+declare module '*.gif';
+declare module '*.json';

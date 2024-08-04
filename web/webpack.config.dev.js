@@ -4,6 +4,9 @@ const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const packageJson = require("./package.json");
+const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin')
+
 
 const babelOptions = {
     'presets': [
@@ -20,13 +23,56 @@ const plugins = [
     }),
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebPackPlugin({
-        title: 'DataProcessCenter',
+        title: packageJson.name,
         template: path.resolve(__dirname, './index.html'),
         filename: './index.html'
     }),
     new MiniCssExtractPlugin({
         filename: 'css/[name].[hash:8].css',
         chunkFilename: 'css/chunk.[id].[chunkhash:8].css',
+    }),
+    new WasmPackPlugin({
+        crateDirectory: path.join(__dirname, "../"),
+
+        // Check https://rustwasm.github.io/wasm-pack/book/commands/build.html for
+        // the available set of arguments.
+        //
+        // Optional space delimited arguments to appear before the wasm-pack
+        // command. Default arguments are `--verbose`.
+        // args: '--log-level warn',
+        // Default arguments are `--typescript --target browser --mode normal`.
+        // extraArgs: '--no-typescript',
+
+        // Optional array of absolute paths to directories, changes to which
+        // will trigger the build.
+        watchDirectories: [
+          path.resolve(__dirname, "../src")
+        ],
+
+        // The same as the `--out-dir` option for `wasm-pack`
+        outDir: path.join(__dirname, "./pkg"),
+
+        // The same as the `--out-name` option for `wasm-pack`
+        // outName: "index",
+
+        // If defined, `forceWatch` will force activate/deactivate watch mode for
+        // `.rs` files.
+        //
+        // The default (not set) aligns watch mode for `.rs` files to Webpack's
+        // watch mode.
+        // forceWatch: true,
+
+        // If defined, `forceMode` will force the compilation mode for `wasm-pack`
+        //
+        // Possible values are `development` and `production`.
+        //
+        // the mode `development` makes `wasm-pack` build in `debug` mode.
+        // the mode `production` makes `wasm-pack` build in `release` mode.
+        // forceMode: "development",
+
+        // Controls plugin output verbosity, either 'info' or 'error'.
+        // Defaults to 'info'.
+        // pluginLogLevel: 'info'
     }),
 ];
 
@@ -45,10 +91,10 @@ const styleLoader = isDev ?
 module.exports = {
     mode: 'development',
     entry: {
-        main: "./src/main.tsx"
+        main: path.join(__dirname, "./src/main.tsx")
     },
     output: {
-        path: path.resolve(__dirname, 'docs/'),
+        path: path.resolve(__dirname, 'dist/'),
         filename: 'js/[name].[hash:8].js',
         chunkFilename: 'js/chunk.[name].[chunkhash:8].js',
         globalObject: 'this'

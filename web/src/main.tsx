@@ -4,19 +4,14 @@
 // // init().then(() => {
 // //     console.log("WASM Loaded");
 // // });
-import wasmUri from "../../pkg/rs_wgpu_engine_bg.wasm";
+import wasmUri from "../pkg/index_bg.wasm";
 // @ts-ignore
-import { __wbg_set_wasm } from "../../pkg/rs_wgpu_engine_bg";
+import * as importObject from "../pkg/index_bg";
 
 console.log("wasmUri", wasmUri);
+console.log("importObject", importObject);
 function loadWasm() {
-    return fetch(wasmUri as any).then(response =>
-        response.arrayBuffer()
-    ).then(bytes =>
-        WebAssembly.compile(bytes)
-    ).then(module => {
-        return new WebAssembly.Instance(module);
-    });
+    return WebAssembly.instantiateStreaming(fetch(wasmUri as any), importObject);
 }
 
 async function main() {
