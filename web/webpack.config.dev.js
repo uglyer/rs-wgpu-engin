@@ -5,7 +5,7 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const packageJson = require("./package.json");
-const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin')
+const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin');
 
 
 const babelOptions = {
@@ -46,14 +46,14 @@ const plugins = [
         // Optional array of absolute paths to directories, changes to which
         // will trigger the build.
         watchDirectories: [
-          path.resolve(__dirname, "../src")
+            path.resolve(__dirname, "../src")
         ],
 
         // The same as the `--out-dir` option for `wasm-pack`
         outDir: path.join(__dirname, "./pkg"),
 
         // The same as the `--out-name` option for `wasm-pack`
-        // outName: "index",
+        outName: packageJson.name,
 
         // If defined, `forceWatch` will force activate/deactivate watch mode for
         // `.rs` files.
@@ -68,7 +68,8 @@ const plugins = [
         //
         // the mode `development` makes `wasm-pack` build in `debug` mode.
         // the mode `production` makes `wasm-pack` build in `release` mode.
-        // forceMode: "development",
+        forceMode: process.env.NODE_ENV,
+        // forceMode: "production",
 
         // Controls plugin output verbosity, either 'info' or 'error'.
         // Defaults to 'info'.
