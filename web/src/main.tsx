@@ -30,9 +30,10 @@ function loadWasm() {
 async function main() {
     const m = await loadWasm();
     const wasm = m.instance.exports;
+    console.log("wasm", wasm);
     importObject.__wbg_set_wasm(wasm);
     // @ts-ignore
-    wasm.__wbindgen_start();
+    wasm.run();
     console.log(m);
 }
 
