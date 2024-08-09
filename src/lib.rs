@@ -1,3 +1,5 @@
+mod app;
+
 use winit::{
     event::*,
     event_loop::EventLoop,

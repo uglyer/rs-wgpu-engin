@@ -1,4 +1,9 @@
-use winit::window::Window;
+use winit::{
+    event::*,
+    event_loop::EventLoop,
+    keyboard::{KeyCode, PhysicalKey},
+    window::{Window, WindowBuilder},
+};
 
 struct Application<'a> {
     surface: wgpu::Surface<'a>,
@@ -26,6 +31,7 @@ impl<'a> Application<'a> {
         todo!()
     }
 
+    #[allow(unused_variables)]
     fn input(&mut self, event: &WindowEvent) -> bool {
         todo!()
     }
