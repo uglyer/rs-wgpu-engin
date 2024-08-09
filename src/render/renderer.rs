@@ -15,6 +15,8 @@ pub struct Renderer<'a> {
     // unsafe references to the window's resources.
     window: &'a Window,
     surface_configured: bool,
+    // The color to clear the screen to each frame.
+    clear_color: wgpu::Color,
 }
 
 impl<'a> Renderer<'a> {
@@ -84,6 +86,9 @@ impl<'a> Renderer<'a> {
             view_formats: vec![],
         };
 
+
+        let clear_color = wgpu::Color::BLACK;
+
         Self {
             surface,
             device,
@@ -92,6 +97,7 @@ impl<'a> Renderer<'a> {
             size,
             window,
             surface_configured: false,
+            clear_color,
         }
     }
 
@@ -121,7 +127,18 @@ impl<'a> Renderer<'a> {
 
     #[allow(unused_variables)]
     pub fn input(&mut self, event: &WindowEvent) -> bool {
-        false
+        match event {
+            WindowEvent::CursorMoved { position, .. } => {
+                self.clear_color = wgpu::Color {
+                    r: position.x as f64 / self.size.width as f64,
+                    g: position.y as f64 / self.size.height as f64,
+                    b: 1.0,
+                    a: 1.0,
+                };
+                true
+            }
+            _ => false,
+        }
     }
 
     pub fn update(&mut self) {
@@ -147,12 +164,7 @@ impl<'a> Renderer<'a> {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(self.clear_color),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
