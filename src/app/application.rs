@@ -1,18 +1,32 @@
+use std::fmt::Debug;
 use winit::{
     event::*,
+    event_loop::EventLoop,
     keyboard::{KeyCode, PhysicalKey},
-    window::{Window},
+    window::{Window, WindowBuilder},
 };
 use winit::event_loop::EventLoopWindowTarget;
 use crate::render::renderer::{Renderer};
 
-pub struct Application<'a> {
-    renderer: Renderer<'a>,
-}
+pub struct Application {}
 
-impl<'a> Application<'a> {
-    // Creating some of the wgpu types requires async code
-    pub async fn new(window: &'a Window) -> Application<'a> {
+impl Application {
+    // Creating app
+    pub async fn new() -> Application {
+        cfg_if::cfg_if! {
+            if #[cfg(target_arch = "wasm32")] {
+                std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+                console_log::init_with_level(log::Level::Info).expect("Couldn't initialize logger");
+            } else {
+                env_logger::init();
+            }
+        }
+        Self {}
+    }
+
+    pub async fn start(&mut self) {
+        let event_loop = EventLoop::new().unwrap();
+        let window = WindowBuilder::new().build(&event_loop).unwrap();
         #[cfg(target_arch = "wasm32")]
         {
             // Winit prevents sizing with CSS, so we have to set
@@ -32,22 +46,24 @@ impl<'a> Application<'a> {
 
             let _ = window.request_inner_size(PhysicalSize::new(450, 400));
         }
-        let renderer = Renderer::new(window).await;
-        Self {
-            renderer,
-        }
+        let mut renderer = Renderer::new(&window).await;
+        event_loop.run(move |event, control_flow| {
+            match event {
+                Event::WindowEvent {
+                    ref event,
+                    window_id,
+                }
+                if window_id == renderer.window().id() => {
+                    self.on_event(&mut renderer, &event, control_flow)
+                }
+                _ => {}
+            }
+        })
+            .unwrap()
     }
 
-    pub fn window(&self) -> &Window {
-        &self.renderer.window()
-    }
-
-    pub fn renderer(&self) -> &Renderer {
-        &self.renderer
-    }
-
-    pub fn on_event(&mut self, event: &WindowEvent, control_flow: &EventLoopWindowTarget<()>) {
-        if self.renderer.input(&event) {
+    pub fn on_event(&mut self, renderer: &mut Renderer, event: &WindowEvent, control_flow: &EventLoopWindowTarget<()>) {
+        if renderer.input(&event) {
             return;
         }
         // UPDATED!
@@ -64,23 +80,23 @@ impl<'a> Application<'a> {
             } => control_flow.exit(),
             WindowEvent::Resized(physical_size) => {
                 log::info!("physical_size: {physical_size:?}");
-                self.renderer.resize(*physical_size, false);
+                renderer.resize(*physical_size, false);
             }
             WindowEvent::RedrawRequested => {
                 // This tells winit that we want another frame after this one
-                self.window().request_redraw();
+                renderer.window().request_redraw();
 
-                if !self.renderer.surface_configured() {
+                if !renderer.surface_configured() {
                     return;
                 }
 
-                self.renderer.update();
-                match self.renderer.render() {
+                renderer.update();
+                match renderer.render() {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
                     Err(
                         wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated,
-                    ) => self.renderer.reinit_size(),
+                    ) => renderer.reinit_size(),
                     // The system is out of memory, we should probably quit
                     Err(wgpu::SurfaceError::OutOfMemory) => {
                         log::error!("OutOfMemory");
