@@ -1,8 +1,3 @@
-use winit::{
-    event::*,
-    event_loop::EventLoop,
-    window::WindowBuilder,
-};
 mod app;
 mod render;
 use app::application::{Application};

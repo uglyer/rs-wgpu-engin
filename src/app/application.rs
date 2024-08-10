@@ -1,9 +1,8 @@
-use std::fmt::Debug;
 use winit::{
     event::*,
     event_loop::EventLoop,
     keyboard::{KeyCode, PhysicalKey},
-    window::{Window, WindowBuilder},
+    window::{WindowBuilder},
 };
 use winit::event_loop::EventLoopWindowTarget;
 use crate::render::renderer::{Renderer};
