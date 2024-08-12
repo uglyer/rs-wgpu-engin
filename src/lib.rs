@@ -1,6 +1,7 @@
 mod app;
 mod core;
 mod render;
+mod utils;
 use app::application::{Application};
 
 #[cfg(target_arch = "wasm32")]
