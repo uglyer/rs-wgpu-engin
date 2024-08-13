@@ -1,4 +1,6 @@
 use std::marker::PhantomData;
+use wgpu::Device;
+use wgpu::util::DeviceExt;
 
 struct GeometryAttribute<T> {
     /// 单组数量
@@ -6,11 +8,12 @@ struct GeometryAttribute<T> {
     /// array.len / item_size
     pub count: usize,
     pub array: Vec<T>,
-    pub normalized: bool,
     /// 需要被更新
     pub need_update: bool,
     /// 这是为了保证类型安全性
     _marker: PhantomData<T>,
+    /// 上传至 gpu 的 buffer 对象
+    wgpu_buffer: Option<wgpu::Buffer>,
 }
 
 impl<T> GeometryAttribute<T>
@@ -23,10 +26,27 @@ where
             item_size,
             count,
             array,
-            normalized: false,
             need_update: true,
             _marker: PhantomData,
+            wgpu_buffer: None,
         }
+    }
+
+    fn update(&mut self, device: &Device) {
+        if !self.need_update {
+            return;
+        }
+        if self.wgpu_buffer.is_some() {
+            let mut cache = self.wgpu_buffer.take().unwrap();
+            cache.destroy();
+            drop(cache);
+        }
+        self.wgpu_buffer = Some(device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("GeometryAttribute Buffer"),
+            contents: bytemuck::cast_slice(&self.array),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+        }));
+        self.need_update = false;
     }
 }
 
