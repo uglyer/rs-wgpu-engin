@@ -1,8 +1,10 @@
 use std::marker::PhantomData;
 use wgpu::Device;
 use wgpu::util::DeviceExt;
+use crate::utils::id::{generate_id, UId};
 
 struct GeometryAttribute<T> {
+    pub id: UId,
     /// 单组数量
     pub item_size: u8,
     /// array.len / item_size
@@ -23,6 +25,7 @@ where
     fn new(item_size: u8, array: Vec<T>) -> Self {
         let count = array.len() / item_size as usize;
         GeometryAttribute {
+            id: generate_id(),
             item_size,
             count,
             array,
@@ -41,12 +44,13 @@ where
             cache.destroy();
             drop(cache);
         }
-        self.wgpu_buffer = Some(device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("GeometryAttribute Buffer"),
-            contents: bytemuck::cast_slice(&self.array),
-            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
-        }));
-        self.need_update = false;
+        // TODO 完成 bytemuck::cast_slice 转换
+        // self.wgpu_buffer = Some(device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        //     label: Some("GeometryAttribute Buffer"),
+        //     contents: bytemuck::cast_slice(self.array.as_ref()),
+        //     usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+        // }));
+        // self.need_update = false;
     }
 }
 
