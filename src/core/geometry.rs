@@ -71,10 +71,10 @@ fn test_new_geometry_attribute() {
 }
 
 pub struct GeometryAttributes {
-    pub position: GeometryAttribute<f32>,
-    pub color: Option<GeometryAttribute<f32>>,
-    pub tex_coords: Option<GeometryAttribute<f32>>,
+    pub position: Option<GeometryAttribute<f32>>,
     pub normal: Option<GeometryAttribute<f32>>,
+    pub tex_coords: Option<GeometryAttribute<f32>>,
+    pub color: Option<GeometryAttribute<f32>>,
 }
 
 struct Geometry {

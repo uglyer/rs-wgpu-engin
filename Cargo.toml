@@ -12,6 +12,8 @@ cfg-if = "1"
 futures = "0.3"
 bytemuck = { version = "1.16", features = [ "derive" ] }
 num_cpus = "1.16.0"
+regex = "1.10.5"
+lazy_static = "1.5.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.6"
