@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use wgpu::Device;
 
 pub type AttributeF32 = Attribute<f32>;
 pub type AttributeF64 = Attribute<f64>;
@@ -30,27 +29,9 @@ where
             count,
             array,
             need_update: true,
-            _marker: PhantomData,
             wgpu_buffer: None,
+            _marker: PhantomData,
         }
-    }
-
-    fn update(&mut self, device: &Device) {
-        if !self.need_update {
-            return;
-        }
-        if self.wgpu_buffer.is_some() {
-            let mut cache = self.wgpu_buffer.take().unwrap();
-            cache.destroy();
-            drop(cache);
-        }
-        // TODO 完成 bytemuck::cast_slice 转换
-        // self.wgpu_buffer = Some(device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        //     label: Some("GeometryAttribute Buffer"),
-        //     contents: bytemuck::cast_slice(self.array.as_ref()),
-        //     usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
-        // }));
-        // self.need_update = false;
     }
 }
 

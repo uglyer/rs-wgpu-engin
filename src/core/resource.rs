@@ -11,6 +11,7 @@ use std::{
     marker::PhantomData,
     mem::transmute,
 };
+use std::collections::HashSet;
 use crate::core::attribute::{AttributeF32, AttributeF64, AttributeUsize};
 use crate::utils::id::{generate_id, UId};
 
@@ -21,6 +22,7 @@ trait ResourcePoolTrait {
 
 pub struct ResourcePool<T> {
     resources: HashMap<UId, T>,
+    resource_id_set: HashSet<ResourceId<T>>
 }
 
 impl<T: 'static> ResourcePoolTrait for ResourcePool<T> {
@@ -53,16 +55,19 @@ fn cast_pool_mut_unsafe<T: 'static>(pool: &Box<dyn ResourcePoolTrait>) -> &mut R
     unsafe { transmute(ptr) }
 }
 
+// TODO 支持遍历扫描销毁资源释放
 impl<T: 'static> ResourcePool<T> {
     pub fn new() -> Self {
         ResourcePool {
-            resources: HashMap::new()
+            resources: HashMap::new(),
+            resource_id_set: HashSet::new(),
         }
     }
 
     pub fn add(&mut self, resource: T) -> ResourceId<T> {
         let rid = ResourceId::new();
         self.resources.insert(rid.id, resource);
+        self.resource_id_set.insert(rid);
         rid
     }
 

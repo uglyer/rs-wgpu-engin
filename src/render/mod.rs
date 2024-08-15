@@ -1,2 +1,3 @@
 pub mod renderer;
-mod shader;
+pub mod shader;
+pub mod wgpu_attributes;
