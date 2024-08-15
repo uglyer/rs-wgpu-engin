@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use crate::core::attribute::{Attribute, AttributeUsize};
+use crate::core::attribute::{Attribute, AttributeF32, AttributeUsize};
 use crate::core::resource::ResourceId;
 
-struct Geometry {
-    attributes: HashMap<&'static str, ResourceId<Attribute()>>,
+pub struct Geometry {
+    attributes: HashMap<&'static str, ResourceId<AttributeF32>>,
     index: Option<ResourceId<AttributeUsize>>,
 }
 
@@ -15,12 +15,12 @@ impl Geometry {
         }
     }
 
-    pub fn set_attribute(&mut self, key: &'static str, attribute: ResourceId<Attribute()>) -> &mut Self {
+    pub fn set_attribute(&mut self, key: &'static str, attribute: ResourceId<AttributeF32>) -> &mut Self {
         self.attributes.insert(key, attribute);
         self
     }
 
-    pub fn borrow_attribute(&self, key: &'static str) -> Option<&ResourceId<Attribute()>> {
+    pub fn borrow_attribute(&self, key: &'static str) -> Option<&ResourceId<AttributeF32>> {
         self.attributes.get(key)
     }
 
