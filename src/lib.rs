@@ -1,6 +1,7 @@
 mod app;
 mod core;
 mod materials;
+mod objects;
 mod render;
 mod utils;
 use app::application::{Application};
