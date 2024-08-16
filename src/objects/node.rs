@@ -1,28 +1,27 @@
 use crate::core::resource::{ResourceId, ResourcePool};
-use cgmath::{Matrix4, Vector3, Quaternion, Euler};
+use cgmath::{Matrix4, Vector3, Quaternion, Euler, SquareMatrix, Decomposed};
+use crate::math::cgmath::{compose_matrix_to, decompose_matrix, decompose_matrix_to};
 
 pub struct Node {
     children: Vec<ResourceId<Node>>,
-    matrix: [f32; 16],
+    matrix: [[f32; 4]; 4],
     parent: Option<ResourceId<Node>>,
     position: [f32; 3],
     quaternion: [f32; 4],
-    rotation: [f32; 3],
     scale: [f32; 3],
-    world_matrix: [f32; 16],
+    world_matrix: [[f32; 4]; 4],
 }
 
 impl Node {
     pub fn new() -> Self {
         Node {
             children: Vec::new(),
-            matrix: Matrix4::create(),
+            matrix: Matrix4::identity().into(),
             parent: None,
-            position: Vector3::create(),
-            quaternion: Quaternion::create(),
-            rotation: Euler::create(),
-            scale: *Vector3::set(&mut Vector3::create(), 1.0, 1.0, 1.0),
-            world_matrix: Matrix4::create(),
+            position: Vector3::new(0.0_f32, 0.0, 0.0).into(),
+            quaternion: Quaternion::new(0.0, 0.0, 0.0, 1.0).into(),
+            scale: Vector3::new(1.0_f32, 1.0, 1.0).into(),
+            world_matrix: Matrix4::identity().into(),
         }
     }
 
@@ -42,13 +41,14 @@ impl Node {
         &mut self.position
     }
 
-    pub fn borrow_rotation(&self) -> &[f32; 3] {
-        &self.rotation
-    }
-
-    pub fn borrow_rotation_mut(&mut self) -> &mut [f32; 3] {
-        &mut self.rotation
-    }
+    // TODO 通过四元数转换
+    // pub fn get_rotation(&self) -> &[f32; 3] {
+    //     &self.quaternion
+    // }
+    //
+    // pub fn borrow_rotation_mut(&mut self) -> &mut [f32; 3] {
+    //     &mut self.rotation
+    // }
 
     pub fn borrow_scale(&self) -> &[f32; 3] {
         &self.scale
@@ -58,29 +58,27 @@ impl Node {
         &mut self.scale
     }
 
-    pub fn borrow_matrix(&self) -> &[f32; 16] {
+    pub fn borrow_matrix(&self) -> &[[f32; 4]; 4] {
         &self.matrix
     }
 
-    pub fn borrow_world_matrix(&self) -> &[f32; 16] {
+    pub fn borrow_world_matrix(&self) -> &[[f32; 4]; 4] {
         &self.world_matrix
     }
 
-    pub fn set_matrix(&mut self, matrix: &[f32; 16]) -> &mut Self {
-        Matrix4::copy(&mut self.matrix, matrix);
-        Matrix4::decompose(&mut self.position, &mut self.quaternion, &mut self.scale, &self.matrix);
-        Euler::set_from_quaternion(&mut self.rotation, &self.quaternion);
+    pub fn set_matrix(&mut self, matrix: &[[f32; 4]; 4]) -> &mut Self {
+        self.matrix.clone_from(matrix);
+        decompose_matrix_to(matrix, &mut self.position, &mut self.quaternion, &mut self.scale);
         self
     }
 
-    pub fn set_world_matrix(&mut self, matrix: &[f32; 16]) -> &mut Self {
-        Matrix4::copy(&mut self.world_matrix, matrix);
+    pub fn set_world_matrix(&mut self, matrix: &[[f32; 4]; 4]) -> &mut Self {
+        self.world_matrix.clone_from(matrix);
         self
     }
 
     pub fn update_matrix(&mut self) -> &mut Self {
-        Quaternion::set_from_euler(&mut self.quaternion, &self.rotation);
-        Matrix4::compose(&mut self.matrix, &self.position, &self.quaternion, &self.scale);
+        compose_matrix_to(&mut self.matrix, &self.position, &self.quaternion, &self.scale);
         self
     }
 
@@ -93,9 +91,10 @@ impl Node {
 
         if let Some(parent) = self.borrow_parent() {
             let parent_matrix = pool.borrow(parent).unwrap().borrow_world_matrix();
-            Matrix4::multiply(&mut self.world_matrix, parent_matrix, &self.matrix);
+            let matrix = Matrix4::from(*parent_matrix) * Matrix4::from(self.matrix);
+            self.world_matrix.clone_from(&matrix.into());
         } else {
-            Matrix4::copy(&mut self.world_matrix, &self.matrix);
+            self.world_matrix.clone_from(&self.matrix);
         }
 
         let mut stack = Vec::new();
@@ -106,17 +105,15 @@ impl Node {
 
         while let Some(rid) = stack.pop() {
             let parent_matrix = {
-                let mut matrix = Matrix4::create();
                 let node = pool.borrow_mut(&rid).unwrap();
                 let parent = node.borrow_parent().cloned().unwrap();
-                Matrix4::copy(&mut matrix, pool.borrow(&parent).unwrap().borrow_world_matrix());
-                matrix
+                Matrix4::from(*pool.borrow(&parent).unwrap().borrow_world_matrix())
             };
 
+
             let node = pool.borrow_mut(&rid).unwrap();
-            let mut matrix = Matrix4::create();
-            Matrix4::multiply(&mut matrix, &parent_matrix, &node.borrow_matrix());
-            node.set_world_matrix(&matrix);
+            let matrix: Matrix4<f32> = Matrix4::from(parent_matrix) * Matrix4::from(*node.borrow_matrix());
+            node.set_world_matrix(&matrix.into());
 
             for child in node.children.iter() {
                 stack.push(*child);
@@ -140,18 +137,18 @@ impl NodeExecutor {
             node.update_matrix();
 
             let parent_matrix = {
-                let mut matrix = Matrix4::create();
                 let node = pool.borrow_mut(&rid).unwrap();
                 if let Some(parent) = node.borrow_parent().cloned() {
-                    Matrix4::copy(&mut matrix, pool.borrow(&parent).unwrap().borrow_world_matrix());
+                    let m = pool.borrow(&parent).unwrap().borrow_world_matrix();
+                    Matrix4::from(*m)
+                } else{
+                    Matrix4::identity()
                 }
-                matrix
             };
 
             let node = pool.borrow_mut(&rid).unwrap();
-            let mut matrix = Matrix4::create();
-            Matrix4::multiply(&mut matrix, &parent_matrix, &node.borrow_matrix());
-            node.set_world_matrix(&matrix);
+            let matrix: Matrix4<f32> = Matrix4::from(parent_matrix) * Matrix4::from(*node.borrow_matrix());
+            node.set_world_matrix(&matrix.into());
 
             for child in node.children.iter() {
                 stack.push(*child);

@@ -1,6 +1,7 @@
 mod app;
 mod core;
 mod materials;
+mod math;
 mod objects;
 mod render;
 mod utils;
