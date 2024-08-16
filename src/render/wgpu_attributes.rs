@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::core::attribute::{Attribute, AttributeF32, AttributeF64};
+use crate::core::attribute::{Attribute, AttributeF32, AttributeF64, AttributeUsize};
 use crate::core::resource::{ResourceId, ResourcePools};
 use crate::utils::id::UId;
 
@@ -18,15 +18,15 @@ impl WGPUAttributes {
         self.attributes.get(&attribute.id)
     }
 
-    // TODO: 支持更新
-    pub fn update<T>(
+    // TODO: 支持更新, 通过宏定义实现其他类型
+    pub fn update_f32<T>(
         &mut self,
         device: &wgpu::Device,
         pools: &ResourcePools,
-        attribute_rid: &ResourceId<T>,
+        attribute_rid: &ResourceId<AttributeF32>,
     ) {
-        if !self.attributes.contains_key(attribute_rid) {
-            if let Some(attribute) = pools.borrow::<T>().borrow(attribute_rid) {
+        if !self.attributes.contains_key(&attribute_rid.id) {
+            if let Some(attribute) = pools.borrow::<AttributeF32>().borrow(attribute_rid) {
                 self.attributes.insert(attribute_rid.id, create_buffer(
                     device,
                     bytemuck::cast_slice(attribute.borrow_data()),

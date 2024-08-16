@@ -9,7 +9,7 @@ pub struct Attribute<T> {
     pub item_size: u8,
     /// array.len / item_size
     pub count: usize,
-    pub array: Vec<T>,
+    pub data: Vec<T>,
     /// 需要被更新
     pub need_update: bool,
     /// 这是为了保证类型安全性
@@ -22,16 +22,24 @@ impl<T> Attribute<T>
 where
     T: Copy + Clone,
 {
-    fn new(item_size: u8, array: Vec<T>) -> Self {
-        let count = array.len() / item_size as usize;
+    fn new(item_size: u8, data: Vec<T>) -> Self {
+        let count = data.len() / item_size as usize;
         Attribute {
             item_size,
             count,
-            array,
+            data,
             need_update: true,
             wgpu_buffer: None,
             _marker: PhantomData,
         }
+    }
+
+    pub fn get_count(&self) -> usize {
+        self.count
+    }
+
+    pub fn borrow_data(&self) -> &Vec<T> {
+        &self.data
     }
 }
 
