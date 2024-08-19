@@ -20,6 +20,7 @@ fn init() {
     map.insert("copyright".into(), include_str!("assets/copyright.wgsl").into());
     map.insert("struct_vertex_input".into(), include_str!("assets/struct/struct_vertex_input.wgsl").into());
     map.insert("basic".into(), include_str!("assets/basic.wgsl").into());
+    map.insert("test".into(), include_str!("assets/test.wgsl").into());
 }
 
 // 提取 `// #include <*>` 内容, 完成字符串模板拼接
@@ -54,7 +55,7 @@ fn replace_include(s: &str, map: &HashMap<String, String>) -> String {
     result
 }
 
-fn get_shader_code(name: &str) -> Option<String> {
+pub fn get_shader_code(name: &str) -> Option<String> {
     init();
     let binding = SHADER_CODE_MAP.lock().unwrap();
     let result = binding.get(name);

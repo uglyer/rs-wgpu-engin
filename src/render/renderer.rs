@@ -3,6 +3,8 @@ use winit::{
     event::*,
     window::{Window},
 };
+use crate::core::resource::ResourcePools;
+use crate::render::shader::shader_builder::get_shader_code;
 
 pub struct Renderer<'a> {
     surface: wgpu::Surface<'a>,
@@ -141,11 +143,9 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) {}
 
-    }
-
-    pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    pub fn render(&mut self, pools: &mut ResourcePools) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
@@ -173,10 +173,15 @@ impl<'a> Renderer<'a> {
                 timestamp_writes: None,
             });
         }
-
+        self.test(pools);
         self.queue.submit(iter::once(encoder.finish()));
         output.present();
 
         Ok(())
+    }
+
+    fn test(&mut self, pools: &mut ResourcePools) {
+        // TODO 测试渲染内容
+
     }
 }

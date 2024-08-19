@@ -12,6 +12,6 @@ use wasm_bindgen::prelude::*;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub async fn run() {
-    let mut app = Application::new().await;
+    let mut app = Application::new();
     app.start().await;
 }

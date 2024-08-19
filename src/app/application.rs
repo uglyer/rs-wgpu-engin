@@ -5,13 +5,18 @@ use winit::{
     window::{WindowBuilder},
 };
 use winit::event_loop::EventLoopWindowTarget;
+use crate::core::resource::ResourcePools;
+use crate::materials::material::Side;
 use crate::render::renderer::{Renderer};
 
-pub struct Application {}
+pub struct Application {
+    // 资源池
+    pools: ResourcePools,
+}
 
 impl Application {
     // Creating app
-    pub async fn new() -> Application {
+    pub fn new() -> Application {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
                 std::panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -20,7 +25,17 @@ impl Application {
                 env_logger::init();
             }
         }
-        Self {}
+        Self {
+            pools: ResourcePools::new(),
+        }
+    }
+
+    pub fn borrow_pools(&self) -> &ResourcePools {
+        &self.pools
+    }
+
+    pub fn borrow_pools_mut(&mut self) -> &mut ResourcePools {
+        &mut self.pools
     }
 
     pub async fn start(&mut self) {
@@ -61,7 +76,7 @@ impl Application {
             .unwrap()
     }
 
-    pub fn on_event(&mut self, renderer: &mut Renderer, event: &WindowEvent, control_flow: &EventLoopWindowTarget<()>) {
+    fn on_event(&mut self, renderer: &mut Renderer, event: &WindowEvent, control_flow: &EventLoopWindowTarget<()>) {
         if renderer.input(&event) {
             return;
         }
@@ -90,7 +105,7 @@ impl Application {
                 }
 
                 renderer.update();
-                match renderer.render() {
+                match renderer.render(self.borrow_pools_mut()) {
                     Ok(_) => {}
                     // Reconfigure the surface if it's lost or outdated
                     Err(
