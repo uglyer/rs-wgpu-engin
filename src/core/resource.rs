@@ -13,6 +13,9 @@ use std::{
 };
 use std::collections::HashSet;
 use crate::core::attribute::{AttributeF32, AttributeF64, AttributeUsize};
+use crate::core::geometry::Geometry;
+use crate::objects::camera::Camera;
+use crate::objects::mesh::Mesh;
 use crate::utils::id::{generate_id, UId};
 
 trait ResourcePoolTrait {
@@ -90,6 +93,9 @@ impl ResourcePools {
         Self::add::<AttributeF32>(&mut pools);
         Self::add::<AttributeF64>(&mut pools);
         Self::add::<AttributeUsize>(&mut pools);
+        Self::add::<Geometry>(&mut pools);
+        Self::add::<Mesh>(&mut pools);
+        Self::add::<Camera>(&mut pools);
 
         ResourcePools {
             pools: pools,

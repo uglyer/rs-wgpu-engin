@@ -5,6 +5,7 @@ use winit::{
 };
 use crate::core::resource::ResourcePools;
 use crate::render::shader::shader_builder::get_shader_code;
+use crate::render::wgpu_render_pipeline::WGPURenderPipelines;
 
 pub struct Renderer<'a> {
     surface: wgpu::Surface<'a>,
@@ -19,6 +20,8 @@ pub struct Renderer<'a> {
     surface_configured: bool,
     // The color to clear the screen to each frame.
     clear_color: wgpu::Color,
+    // The render pipeline is the pipeline that will be used to render the scene.
+    render_pipelines: WGPURenderPipelines,
 }
 
 impl<'a> Renderer<'a> {

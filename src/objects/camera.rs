@@ -1,6 +1,6 @@
 use cgmath::{Deg, Matrix4, perspective, SquareMatrix};
 
-pub struct PerspectiveCamera {
+pub struct Camera {
 	aspect: f32,
 	far: f32,
 	fovy: Deg<f32>,
@@ -9,9 +9,9 @@ pub struct PerspectiveCamera {
 	projection_matrix_inverse: [[f32; 4]; 4],
 }
 
-impl PerspectiveCamera {
+impl Camera {
 	pub fn new(fovy: f32, aspect: f32, near: f32, far: f32) -> Self {
-		let mut camera = PerspectiveCamera {
+		let mut camera = Camera {
 			aspect: aspect,
 			far: far,
 			fovy: Deg(fovy),
