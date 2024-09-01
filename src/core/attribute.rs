@@ -22,7 +22,7 @@ impl<T> Attribute<T>
 where
     T: Copy + Clone,
 {
-    fn new(item_size: u8, data: Vec<T>) -> Self {
+    pub(crate) fn new(data: Vec<T>, item_size: u8) -> Self {
         let count = data.len() / item_size as usize;
         Attribute {
             item_size,
