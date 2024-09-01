@@ -185,6 +185,11 @@ impl<'a> Renderer<'a> {
 
     fn test(&mut self, pools: &mut ResourcePools) {
         // TODO 测试渲染内容
-
+        let geometry = GeometryHelper::create_box(
+            pools,
+            1.0,
+            1.0,
+            1.0,
+        );
     }
 }
