@@ -132,14 +132,12 @@ impl WGPURenderPipeline {
 
 pub struct WGPURenderPipelines {
     pipelines: HashMap::<ResourceId<Node>, WGPURenderPipeline>,
-    config: wgpu::SurfaceConfiguration,
 }
 
 impl WGPURenderPipelines {
-    pub fn new(config: wgpu::SurfaceConfiguration) -> Self {
+    pub fn new() -> Self {
         Self {
             pipelines: HashMap::new(),
-            config
         }
     }
 
@@ -155,6 +153,7 @@ impl WGPURenderPipelines {
         &mut self,
         device: &wgpu::Device,
         pools: &ResourcePools,
+        config: &wgpu::SurfaceConfiguration
         node: &ResourceId<Node>,
         material: &Material,
         bind_group_layout: &wgpu::BindGroupLayout,
@@ -165,7 +164,7 @@ impl WGPURenderPipelines {
                 *node,
                 WGPURenderPipeline::new(
                     device,
-                    &self.config,
+                    config,
                     bind_group_layout,
                     &material.build_shader_code(),
                     sample_count,

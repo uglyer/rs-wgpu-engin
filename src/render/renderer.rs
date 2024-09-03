@@ -4,8 +4,9 @@ use winit::{
     window::{Window},
 };
 use crate::core::resource::ResourcePools;
+use crate::helpers::geometry_helper::GeometryHelper;
 use crate::render::shader::shader_builder::get_shader_code;
-use crate::render::wgpu_render_pipeline::WGPURenderPipelines;
+use crate::render::wgpu_render_pipeline::{WGPURenderPipeline, WGPURenderPipelines};
 
 pub struct Renderer<'a> {
     surface: wgpu::Surface<'a>,
@@ -91,6 +92,8 @@ impl<'a> Renderer<'a> {
             view_formats: vec![],
         };
 
+        let render_pipelines = WGPURenderPipelines::new();
+
 
         let clear_color = wgpu::Color::BLACK;
 
@@ -103,6 +106,7 @@ impl<'a> Renderer<'a> {
             window,
             surface_configured: false,
             clear_color,
+            render_pipelines,
         }
     }
 
