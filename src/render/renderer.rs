@@ -6,6 +6,7 @@ use winit::{
 use crate::core::resource::ResourcePools;
 use crate::helpers::geometry_helper::GeometryHelper;
 use crate::render::shader::shader_builder::get_shader_code;
+use crate::render::wgpu_attributes::WGPUAttributes;
 use crate::render::wgpu_render_pipeline::{WGPURenderPipeline, WGPURenderPipelines};
 
 pub struct Renderer<'a> {
@@ -23,6 +24,8 @@ pub struct Renderer<'a> {
     clear_color: wgpu::Color,
     // The render pipeline is the pipeline that will be used to render the scene.
     render_pipelines: WGPURenderPipelines,
+    // The attributes are the buffers that will be used to render the scene.
+    attributes: WGPUAttributes,
 }
 
 impl<'a> Renderer<'a> {
@@ -93,6 +96,7 @@ impl<'a> Renderer<'a> {
         };
 
         let render_pipelines = WGPURenderPipelines::new();
+        let attributes = WGPUAttributes::new();
 
 
         let clear_color = wgpu::Color::BLACK;
@@ -107,6 +111,7 @@ impl<'a> Renderer<'a> {
             surface_configured: false,
             clear_color,
             render_pipelines,
+            attributes,
         }
     }
 
