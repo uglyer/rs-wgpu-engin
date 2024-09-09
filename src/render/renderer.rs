@@ -3,8 +3,11 @@ use winit::{
     event::*,
     window::{Window},
 };
+use crate::core::geometry::Geometry;
 use crate::core::resource::ResourcePools;
 use crate::helpers::geometry_helper::GeometryHelper;
+use crate::materials::material::{Material, Side};
+use crate::objects::mesh::Mesh;
 use crate::render::shader::shader_builder::get_shader_code;
 use crate::render::wgpu_attributes::WGPUAttributes;
 use crate::render::wgpu_render_pipeline::{WGPURenderPipeline, WGPURenderPipelines};
@@ -200,5 +203,8 @@ impl<'a> Renderer<'a> {
             1.0,
             1.0,
         );
+        let material = Material::new_basic_color([1.0, 0.0, 0.0, 1.0], Side::default());
+        let material_resource = pools.borrow_mut::<Material>().add(material);
+        let mesh = pools.borrow_mut::<Mesh>().add(Mesh::new(geometry, material_resource));
     }
 }
