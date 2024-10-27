@@ -203,6 +203,12 @@ impl<'a> Renderer<'a> {
             1.0,
             1.0,
         );
+        let geometry = GeometryHelper::create_box(
+            pools,
+            1.0,
+            1.0,
+            1.0,
+        );
         let material = Material::new_basic_color([1.0, 0.0, 0.0, 1.0], Side::default());
         let material_resource = pools.borrow_mut::<Material>().add(material);
         let mesh = pools.borrow_mut::<Mesh>().add(Mesh::new(geometry, material_resource));
