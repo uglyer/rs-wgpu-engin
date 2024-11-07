@@ -5,6 +5,7 @@
 //! the trait for your own shapes.
 
 use bevy::math::Vec2;
+use log::info;
 use lyon_tessellation::{
     geom::euclid::default::Size2D,
     math::{point, Angle, Box2D, Point, Vector},
@@ -335,7 +336,7 @@ impl Geometry for SvgPathShape {
         let offset_x = self.svg_doc_size_in_px.x / 2.;
         let offset_y = self.svg_doc_size_in_px.y / 2.;
         let mut used_move_command = false;
-
+        info!("Adding svg path: {}", self.svg_path_string);
         for path_segment in PathParser::from(self.svg_path_string.as_str()) {
             match path_segment.unwrap() {
                 PathSegment::MoveTo { abs, x, y } => {

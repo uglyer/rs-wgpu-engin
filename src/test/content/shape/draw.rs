@@ -6,10 +6,12 @@ use lyon_tessellation::{FillOptions, StrokeOptions};
 /// Defines the fill options for the lyon tessellator and color of the generated
 /// vertices.
 #[allow(missing_docs)]
-#[derive(Component, Debug, Clone, Copy, PartialEq)]
+#[derive(Component, Debug, Clone, PartialEq)]
 pub struct Fill {
     pub options: FillOptions,
     pub color: Color,
+    pub resource_id: Option<String>,
+    pub disabled: Option<bool>,
 }
 
 impl Fill {
@@ -19,6 +21,27 @@ impl Fill {
         Self {
             options: FillOptions::default(),
             color: color.into(),
+            resource_id: None,
+            disabled: None
+        }
+    }
+    #[must_use]
+    pub fn new_by_resource_id(resource_id: String) -> Self {
+        Self {
+            options: FillOptions::default(),
+            color: Color::WHITE,
+            resource_id: Some(resource_id),
+            disabled: None
+        }
+    }
+    /// Convenience constructor requiring only the `Color`.
+    #[must_use]
+    pub fn disabled() -> Self {
+        Self {
+            options: FillOptions::default(),
+            color: Color::WHITE,
+            resource_id: None,
+            disabled: Option::from(true)
         }
     }
 }
@@ -30,6 +53,7 @@ impl Fill {
 pub struct Stroke {
     pub options: StrokeOptions,
     pub color: Color,
+    pub disabled: Option<bool>,
 }
 
 impl Stroke {
@@ -39,6 +63,7 @@ impl Stroke {
         Self {
             options: StrokeOptions::default().with_line_width(line_width),
             color: color.into(),
+            disabled: None,
         }
     }
 
@@ -48,6 +73,16 @@ impl Stroke {
         Self {
             options: StrokeOptions::default(),
             color: color.into(),
+            disabled: None,
+        }
+    }
+
+    #[must_use]
+    pub fn disabled() -> Self {
+        Self {
+            options: StrokeOptions::default(),
+            color: Color::BLACK,
+            disabled: Option::from(true)
         }
     }
 }

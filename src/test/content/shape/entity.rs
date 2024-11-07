@@ -2,15 +2,16 @@
 
 use bevy::{prelude::*, sprite::Mesh2dHandle};
 use lyon_tessellation::{self as tess};
+use crate::assets::shaders::background_image_material_2d::BackgroundImageMaterial2d;
 use crate::content::shape::{geometry::Geometry, plugin::COLOR_MATERIAL_HANDLE};
 
 /// A Bevy `Bundle` to represent a shape.
 #[allow(missing_docs)]
-#[derive(Bundle, Clone)]
+#[derive(Bundle, Clone, Debug)]
 pub struct ShapeBundle {
     pub path: Path,
     pub mesh: Mesh2dHandle,
-    pub material: Handle<ColorMaterial>,
+    pub material: Handle<BackgroundImageMaterial2d>,
     pub spatial: SpatialBundle,
 }
 
@@ -26,7 +27,7 @@ impl Default for ShapeBundle {
 }
 
 #[allow(missing_docs)]
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Clone, Debug)]
 pub struct Path(pub tess::path::Path);
 
 impl Geometry for Path {

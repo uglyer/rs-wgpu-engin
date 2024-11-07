@@ -18,14 +18,15 @@ use bevy::{
     sprite::Mesh2dHandle,
 };
 use lyon_tessellation::{self as tess, BuffersBuilder};
-
+use crate::assets::shaders::background_image_material_2d::BackgroundImageMaterial2d;
 use crate::content::shape::{
     draw::{Fill, Stroke},
     entity::Path,
     vertex::{VertexBuffers, VertexConstructor},
 };
+use crate::utils::bevy_utils::hex_to_color_linear_rgba;
 
-pub(crate) const COLOR_MATERIAL_HANDLE: Handle<ColorMaterial> =
+pub(crate) const COLOR_MATERIAL_HANDLE: Handle<BackgroundImageMaterial2d> =
     Handle::weak_from_u128(0x7CC6_61A1_0CD6_C147_129A_2C01_882D_9580);
 
 /// A plugin that provides resources and a system to draw shapes in Bevy with
@@ -45,13 +46,10 @@ impl Plugin for ShapePlugin {
             .add_systems(PostUpdate, mesh_shapes_system.in_set(BuildShapes));
 
         app.world_mut()
-            .resource_mut::<Assets<ColorMaterial>>()
+            .resource_mut::<Assets<BackgroundImageMaterial2d>>()
             .insert(
                 &COLOR_MATERIAL_HANDLE,
-                ColorMaterial {
-                    color: Color::WHITE,
-                    ..default()
-                },
+                BackgroundImageMaterial2d::new_color(hex_to_color_linear_rgba("#ffffff")),
             );
     }
 }
@@ -66,6 +64,7 @@ pub struct BuildShapes;
 #[allow(clippy::type_complexity)]
 fn mesh_shapes_system(
     mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<BackgroundImageMaterial2d>>,
     mut fill_tess: ResMut<FillTessellator>,
     mut stroke_tess: ResMut<StrokeTessellator>,
     mut query: Query<
@@ -104,6 +103,11 @@ fn fill(
     mode: &Fill,
     buffers: &mut VertexBuffers,
 ) {
+    if let Some(disabled) = mode.disabled  {
+        if disabled {
+            return;
+        }
+    }
     if let Err(e) = tess.tessellate_path(
         path,
         &mode.options,
@@ -120,12 +124,16 @@ fn stroke(
     mode: &Stroke,
     buffers: &mut VertexBuffers,
 ) {
-    if let Err(e) = tess.tessellate_path(
-        path,
-        &mode.options,
-        &mut BuffersBuilder::new(buffers, VertexConstructor { color: mode.color }),
-    ) {
-        error!("StrokeTessellator error: {:?}", e);
+    if let Some(_) = mode.disabled {
+        return;
+    } else {
+        if let Err(e) = tess.tessellate_path(
+            path,
+            &mode.options,
+            &mut BuffersBuilder::new(buffers, VertexConstructor { color: mode.color }),
+        ) {
+            error!("StrokeTessellator error: {:?}", e);
+        }
     }
 }
 
@@ -150,6 +158,31 @@ fn build_mesh(buffers: &VertexBuffers) -> Mesh {
             .iter()
             .map(|v| v.color)
             .collect::<Vec<[f32; 4]>>(),
+    );
+    // 计算 vertices 的 坐标包围盒大小, 换算 uv 坐标
+    let (min_x, min_y, max_x, max_y) = buffers.vertices.iter().fold(
+        (f32::MAX, f32::MAX, f32::MIN, f32::MIN),
+        |(min_x, min_y, max_x, max_y), v| {
+            (
+                min_x.min(v.position[0]),
+                min_y.min(v.position[1]),
+                max_x.max(v.position[0]),
+                max_y.max(v.position[1]),
+            )
+        },
+    );
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+    mesh.insert_attribute(
+        Mesh::ATTRIBUTE_UV_0,
+        buffers
+            .vertices
+            .iter()
+            .map(|v| [
+                (v.position[0] - min_x) / width,
+                (v.position[1] - min_y) / height,
+            ])
+            .collect::<Vec<[f32; 2]>>(),
     );
 
     mesh
